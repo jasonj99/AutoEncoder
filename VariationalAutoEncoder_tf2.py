@@ -10,6 +10,10 @@ from scipy.misc import imsave
 from tensorflow.examples.tutorials.mnist import input_data
 
 
+def xrange(x):
+    return iter(range(x))
+
+
 class Plots:
     def __init__(self, dir, n_img_x=8, n_img_y=8, img_w=28, img_h=28, resize_factor=1.0):
         self.dir = dir
@@ -57,7 +61,7 @@ for i in range(10):
 
 same_digit_pairs = []
 for i in range(10):
-    same_digit_pairs.append(random.sample(test_pairs[i], 2))
+    same_digit_pairs.append(random.sample(test_pairs[i].tolist(), 2))
 same_digit_pairs = np.array(same_digit_pairs)
 same_digit_pairs = same_digit_pairs.reshape(20, 785)
 x_same = same_digit_pairs[:, :784]
@@ -66,9 +70,9 @@ y_s = same_digit_pairs[:, 784]
 diff_digit_pairs = []
 random.seed(345)
 for i in range(10):
-    a = random.sample(test, 2)
+    a = random.sample(list(test), 2)
     while a[0][784] == a[1][784]:
-        a = random.sample(test, 2)
+        a = random.sample(list(test), 2)
     diff_digit_pairs.append(a)
 
 diff_digit_pairs = np.array(diff_digit_pairs)
@@ -90,8 +94,8 @@ del y_s, y_d, diff_digit_pairs, same_digit_pairs, test_pairs, mnist, test
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 n_samples = mnist.train.num_examples
 learning_rate = 0.001
-batch_size = 128
-training_epochs = 5
+batch_size = 256
+training_epochs = 500
 display_step = 5
 n_hidden = 512
 n_input = n_output = 784
@@ -112,11 +116,13 @@ with tf.variable_scope("encoder"):
     w0 = tf.get_variable('w0', [x.get_shape()[1], n_hidden], initializer=w_init)
     b0 = tf.get_variable('b0', [n_hidden], initializer=b_init)
     h0 = tf.nn.dropout(tf.nn.elu(tf.matmul(x, w0) + b0), keep_prob)
+    # h0 = tf.nn.dropout(tf.nn.relu(tf.matmul(x, w0) + b0), keep_prob)
 
     # 2nd hidden layer
     w1 = tf.get_variable('w1', [h0.get_shape()[1], n_hidden], initializer=w_init)
     b1 = tf.get_variable('b1', [n_hidden], initializer=b_init)
     h1 = tf.nn.dropout(tf.nn.tanh(tf.matmul(h0, w1) + b1), keep_prob)
+    # h1 = tf.nn.dropout(tf.nn.relu(tf.matmul(h0, w1) + b1), keep_prob)
 
     # output layer
     wo = tf.get_variable('wo', [h1.get_shape()[1], n_z * 2], initializer=w_init)
@@ -141,11 +147,13 @@ with tf.variable_scope("decoder", reuse=tf.AUTO_REUSE):
     w0 = tf.get_variable('w0', [z.get_shape()[1], n_hidden], initializer=w_init)
     b0 = tf.get_variable('b0', [n_hidden], initializer=b_init)
     h0 = tf.nn.dropout(tf.nn.tanh(tf.matmul(z, w0) + b0), keep_prob)
+    # h0 = tf.nn.dropout(tf.nn.relu(tf.matmul(z, w0) + b0), keep_prob)
 
     # 2nd hidden layer
     w1 = tf.get_variable('w1', [h0.get_shape()[1], n_hidden], initializer=w_init)
     b1 = tf.get_variable('b1', [n_hidden], initializer=b_init)
     h1 = tf.nn.dropout(tf.nn.elu(tf.matmul(h0, w1) + b1), keep_prob)
+    # h1 = tf.nn.dropout(tf.nn.relu(tf.matmul(h0, w1) + b1), keep_prob)
 
     # output layer-mean
     wo = tf.get_variable('wo', [h1.get_shape()[1], n_output], initializer=w_init)
