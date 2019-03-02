@@ -62,7 +62,7 @@ saver = tf.train.Saver()
 loss = []
 valid_loss = []
 display_step = 1
-epochs = 25
+epochs = 10  # 25
 batch_size = 64
 lr = 1e-5
 sess.run(tf.global_variables_initializer())
@@ -108,12 +108,14 @@ x_test_noisy = np.clip(x_test_noisy, 0., 1.)
 
 recon_img = sess.run([decoded], feed_dict={images: x_test_noisy})[0]
 res_err = sess.run([residual_error], feed_dict={images: imgs})[0]
-pca = PCA(n_components=5)
-pca.fit(res_err)
-reserr_pca = pca.transform(res_err)
+
+# pca = PCA(n_components=2)
+# pca.fit(res_err)
+# reserr_pca = pca.transform(res_err)
 
 # plt.figure(figsize=(20, 4))
 # plt.title('Reconstructed Images')
+
 plt.figure(figsize=(20, 4))
 toPlot = (imgs, x_test_noisy, recon_img, res_err)
 for i in range(10):
@@ -124,35 +126,44 @@ for i in range(10):
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
 plt.tight_layout()
+plt.show()
+
 print("Original Images")
+plt.figure(figsize=(16, 4))
+plt.suptitle('Original Images')
 for i in range(10):
-    plt.subplot(2, 10, i + 1)
-    plt.title('Reconstructed Images')
+    plt.subplot(1, 10, i + 1)
     plt.imshow(imgs[i, ..., 0], cmap='gray')
+plt.tight_layout()
 plt.show()
-plt.figure(figsize=(20, 4))
+
 print("Noisy Images")
+plt.figure(figsize=(16, 4))
+plt.suptitle('Noisy Images')
 for i in range(10):
-    plt.subplot(2, 10, i + 1)
-    plt.title('Noisy Images')
+    plt.subplot(1, 10, i + 1)
     plt.imshow(x_test_noisy[i, ..., 0], cmap='gray')
+plt.tight_layout()
 plt.show()
-plt.figure(figsize=(20, 4))
+
 print("Reconstruction of Noisy Images")
+plt.figure(figsize=(16, 4))
+plt.suptitle('Reconstruction of Noisy Images')
 for i in range(10):
-    plt.subplot(2, 10, i + 1)
-    plt.title('Reconstruction of Noisy Images')
+    plt.subplot(1, 10, i + 1)
     plt.imshow(recon_img[i, ..., 0], cmap='gray')
-# plt.show()
+plt.tight_layout()
+plt.show()
 
-# plt.figure(figsize=(20, 4))
 print("Mean residual error")
+plt.figure(figsize=(16, 4))
+plt.suptitle('Mean residual error')
 for i in range(10):
-    plt.subplot(2, 10, i + 1)
-    plt.title('Mean residual error')
+    plt.subplot(1, 10, i + 1)
     plt.imshow(res_err[i, ..., 0], cmap='gray')
-
+plt.tight_layout()
 plt.show()
 
 writer.close()
 sess.close()
+print('done.')
